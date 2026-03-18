@@ -859,7 +859,7 @@ export default function HomePage() {
                   borderBottom: "1px solid rgba(196,151,58,0.4)",
                   paddingBottom: "3px",
                 }}>了解更多 →</Link>
-                <a href="https://tanbo.art" target="_blank" rel="noopener noreferrer" style={{
+                <a href="http://www.tempoart.cn/" target="_blank" rel="noopener noreferrer" style={{
                   display: "inline-flex",
                   alignItems: "center",
                   gap: "0.5rem",
@@ -912,7 +912,7 @@ export default function HomePage() {
           }}>
             坦博艺苑完整收藏，更多藏品、展览、学术研究成果，请访问官方网站
           </p>
-          <a href="https://tanbo.art" target="_blank" rel="noopener noreferrer" style={{
+          <a href="http://www.tempoart.cn/" target="_blank" rel="noopener noreferrer" style={{
             display: "inline-flex",
             alignItems: "center",
             gap: "0.75rem",
