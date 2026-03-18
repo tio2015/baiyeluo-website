@@ -1,0 +1,7 @@
+node_modules/
+.next/
+out/
+.env*
+upload_to_oss.mjs
+/tmp/
+*.log

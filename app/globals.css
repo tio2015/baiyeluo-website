@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif+SC:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-gold: #c4973a;
+  --color-gold-light: #e6c05f;
+  --color-gold-dark: #8b6914;
+  --color-parchment: #f4efe3;
+  --color-parchment-dark: #ede5d0;
+  --color-ink: #1c1c1c;
+  --color-zen: #2a1f13;
+  --color-jade: #2e4a35;
+}
+
+:root {
+  --gold: #c4973a;
+  --gold-light: #e6c05f;
+  --gold-dark: #8b6914;
+  --parchment: #f4efe3;
+  --parchment-dark: #ede5d0;
+  --zen-brown: #7a4e2d;
+  --jade: #2e4a35;
+  --ink: #1c1c1c;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--parchment);
+  color: var(--ink);
+  font-family: 'Noto Serif SC', 'STSong', 'SimSun', Georgia, serif;
+  line-height: 1.8;
+  overflow-x: hidden;
+}
+
+h1,h2,h3,h4,h5 {
+  font-family: 'Noto Serif SC', 'STKaiti', 'KaiTi', serif;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+}
+
+/* ── 导航 ── */
+.nav-link {
+  position: relative;
+  font-size: 0.875rem;
+  letter-spacing: 0.08em;
+  color: rgba(244,239,227,0.75);
+  text-decoration: none;
+  transition: color 0.3s;
+  padding: 0.25rem 0;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 0; height: 1px;
+  background: var(--gold);
+  transition: width 0.3s;
+}
+.nav-link:hover { color: var(--gold); }
+.nav-link:hover::after { width: 100%; }
+
+/* ── 背景纹理 ── */
+.parchment-texture {
+  background-color: var(--parchment);
+  background-image:
+    radial-gradient(ellipse at 10% 20%, rgba(196,151,58,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 80%, rgba(122,78,45,0.04) 0%, transparent 50%);
+}
+
+/* ── 动画 ── */
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(8px); }
+}
+
+/* ── 滚动条 ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--parchment); }
+::-webkit-scrollbar-thumb { background: rgba(196,151,58,0.4); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+::selection { background: rgba(196,151,58,0.18); }

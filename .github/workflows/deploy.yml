@@ -1,0 +1,58 @@
+name: 构建并部署贝叶经网站到阿里云OSS
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 构建（静态导出）
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: 安装 ossutil
+        run: |
+          wget -q https://gosspublic.alicdn.com/ossutil/v1.7.18/ossutil-v1.7.18-linux-amd64.zip -O ossutil.zip
+          unzip -o ossutil.zip
+          sudo mv ossutil-v1.7.18-linux-amd64/ossutil /usr/local/bin/ossutil
+          rm -rf ossutil.zip ossutil-v1.7.18-linux-amd64
+
+      - name: 配置 ossutil
+        run: |
+          ossutil config \
+            -e oss-cn-hongkong.aliyuncs.com \
+            -i "${{ secrets.OSS_ACCESS_KEY_ID }}" \
+            -k "${{ secrets.OSS_ACCESS_KEY_SECRET }}"
+
+      - name: 上传静态文件到 OSS
+        run: |
+          # 上传 HTML（不缓存）
+          find out -name "*.html" | while read f; do
+            key="baiyeluo/${f#out/}"
+            ossutil cp "$f" "oss://yiyeguizhen-web-hk/$key" \
+              --meta "Cache-Control:no-cache, no-store, must-revalidate" -f
+          done
+
+          # 上传静态资源（长期缓存）
+          ossutil cp out/_next/ oss://yiyeguizhen-web-hk/baiyeluo/_next/ \
+            --meta "Cache-Control:max-age=31536000" -r -f
+
+          # 上传其他资源（images 等）
+          ossutil cp out/images/ oss://yiyeguizhen-web-hk/baiyeluo/images/ \
+            --meta "Cache-Control:max-age=86400" -r -f 2>/dev/null || true
+
+          echo "✅ 贝叶经网站部署完成 → yiyeguizhen.com/baiyeluo/"
