@@ -67,10 +67,10 @@ export default function CollectionPage() {
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "0" }}>
             {[
-              { num: "657", unit: "部", label: "馆藏总量", note: "与玄奘取经数量一致" },
-              { num: "5", unit: "朝", label: "历史跨度", note: "唐 · 宋 · 元 · 明 · 清" },
+              { num: "150万+", unit: "页", label: "馆藏总量", note: "古巴利文·梵文·藏文佛学珍品" },
+              { num: "657", unit: "部", label: "完整经册", note: "与玄奘取经数量一致" },
               { num: "4+", unit: "语种", label: "书写语言", note: "巴利 · 梵 · 藏 · 缅" },
-              { num: "5+", unit: "地区", label: "来源地域", note: "汉地 · 印度 · 西藏 · 缅甸 · 锡兰" },
+              { num: "10+", unit: "国", label: "来源地域", note: "印度·尼泊尔·斯里兰卡·巴基斯坦·阿富汗" },
             ].map((s, i) => (
               <div key={i} style={{
                 padding: "2.5rem 2rem",
@@ -298,6 +298,75 @@ export default function CollectionPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 贝叶经制作工艺 ── */}
+      <section style={{ padding: "7rem 2rem", background: "#f4efe3" }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "4rem" }}>
+            <div style={{ fontFamily: "'EB Garamond',serif", fontSize: "0.8rem", color: "#c4973a", letterSpacing: "0.35em", textTransform: "uppercase", marginBottom: "1rem" }}>Craft & Preservation</div>
+            <h2 style={{ fontFamily: "'Noto Serif SC',serif", fontSize: "clamp(1.5rem,3vw,2rem)", fontWeight: 500, letterSpacing: "0.15em", color: "#1c1c1c", marginBottom: "1rem" }}>千年不腐的制作工艺</h2>
+            <p style={{ fontFamily: "'Noto Serif SC',serif", fontSize: "0.95rem", color: "rgba(28,28,28,0.55)", lineHeight: 2, maxWidth: "520px", margin: "0 auto" }}>
+              贝叶经的制作需经六道工序，成品防虫、防水、防变形，经年不腐，堪称古代文明的保存奇迹。
+            </p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1.5rem" }}>
+            {[
+              { step: "01", title: "采叶", desc: "取贝多罗树（棕榈科）宽大叶片，砍下后修割整齐，选取纹理均匀、厚薄一致者备用。" },
+              { step: "02", title: "煮制", desc: "与酸角或柠檬同煮，至表皮脱落，叶片呈淡绿白色，质地柔韧，去除杂质与虫卵。" },
+              { step: "03", title: "晒干", desc: "细沙搓洗，反复压平，在阴凉通风处自然晾晒，直至叶片平整光滑、不易卷曲。" },
+              { step: "04", title: "装订", desc: "在叶片两端精准钻孔，以丝线或绳索串联成册，通常每册数十至数百片不等。" },
+              { step: "05", title: "刻写", desc: "以铁制铁簪在叶片两面刻写经文，字迹细密工整，每行约二三十字，笔法因语种而异。" },
+              { step: "06", title: "涂油", desc: "涂抹植物果油与碳粉混合物，碳粉渗入刻槽显字，果油封护叶面，形成天然防护层。" },
+            ].map((item) => (
+              <div key={item.step} style={{ background: "rgba(255,255,255,0.7)", border: "1px solid rgba(196,151,58,0.15)", padding: "2rem" }}>
+                <div style={{ fontFamily: "'EB Garamond',serif", fontSize: "2.5rem", color: "rgba(196,151,58,0.2)", lineHeight: 1, marginBottom: "1rem" }}>{item.step}</div>
+                <h3 style={{ fontFamily: "'Noto Serif SC',serif", fontSize: "1.1rem", fontWeight: 500, color: "#1c1c1c", letterSpacing: "0.15em", marginBottom: "0.75rem" }}>{item.title}</h3>
+                <div style={{ height: "1px", background: "rgba(196,151,58,0.2)", marginBottom: "0.75rem" }} />
+                <p style={{ fontFamily: "'Noto Serif SC',serif", fontSize: "0.85rem", color: "rgba(28,28,28,0.6)", lineHeight: 2 }}>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 特色藏品：宋代舌血彩绘贝叶经 ── */}
+      <section style={{ padding: "6rem 2rem", background: "#2a1f13" }}>
+        <div style={{ maxWidth: "960px", margin: "0 auto" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5rem", alignItems: "center" }}>
+            <div>
+              <div style={{ fontFamily: "'EB Garamond',serif", fontSize: "0.75rem", color: "rgba(196,151,58,0.6)", letterSpacing: "0.3em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Featured · Song Dynasty</div>
+              <h2 style={{ fontFamily: "'Noto Serif SC',serif", fontSize: "clamp(1.4rem,3vw,1.9rem)", fontWeight: 400, letterSpacing: "0.12em", color: "#f4efe3", lineHeight: 1.8, marginBottom: "2rem" }}>
+                宋代<br />舌血彩绘贝叶经
+              </h2>
+              <div style={{ height: "1px", background: "linear-gradient(90deg,#c4973a,transparent)", marginBottom: "2rem" }} />
+              <p style={{ fontFamily: "'Noto Serif SC',serif", fontSize: "0.92rem", color: "rgba(244,239,227,0.65)", lineHeight: 2.3, marginBottom: "1.5rem" }}>
+                高僧以虔诚之心，刺破舌尖，以鲜血混合珍珠、玛瑙、朱砂，在贝叶上书写经文。
+                血书经典，是佛教传统中最高级别的礼仪，象征以生命供养佛法。
+              </p>
+              <p style={{ fontFamily: "'Noto Serif SC',serif", fontSize: "0.92rem", color: "rgba(244,239,227,0.65)", lineHeight: 2.3 }}>
+                此件宋代孤本距今逾千年，历经朝代更迭而完整留存，
+                是坦博艺苑最具代表性的镇馆之宝，见证人类信仰文明的极致表达。
+              </p>
+            </div>
+            <div style={{ border: "1px solid rgba(196,151,58,0.25)", padding: "3rem", textAlign: "center" }}>
+              <div style={{ fontFamily: "'Noto Serif SC',serif", fontSize: "4rem", color: "rgba(196,151,58,0.15)", lineHeight: 1, marginBottom: "2rem" }}>經</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                {[
+                  ["年代", "宋代（公元960—1279年）"],
+                  ["材质", "贝叶 · 舌血 · 珍珠 · 朱砂"],
+                  ["性质", "孤本 · 镇馆之宝"],
+                  ["意义", "佛教至高礼仪的实物见证"],
+                ].map(([k,v]) => (
+                  <div key={k} style={{ display: "flex", justifyContent: "space-between", paddingBottom: "0.75rem", borderBottom: "1px solid rgba(196,151,58,0.1)" }}>
+                    <span style={{ fontFamily: "'EB Garamond',serif", fontSize: "0.72rem", color: "rgba(196,151,58,0.5)", letterSpacing: "0.15em" }}>{k}</span>
+                    <span style={{ fontFamily: "'Noto Serif SC',serif", fontSize: "0.82rem", color: "rgba(244,239,227,0.55)" }}>{v}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
