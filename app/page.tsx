@@ -358,7 +358,7 @@ export default function HomePage() {
           display: "grid",
           gridTemplateColumns: "repeat(4, 1fr)",
         }}>
-          <StatCard num="657" unit="部" label="馆藏贝叶经" sublabel="SUTRAS" />
+          <StatCard num="150万" unit="+" label="馆藏贝叶经页" sublabel="PAGES" />
           <StatCard num="10000" unit="片+" label="首期数字典藏" sublabel="DIGITIZED" />
           <StatCard num="11" unit="次" label="捐赠与交流记录" sublabel="EXCHANGES" />
           <StatCard num="30" unit="年+" label="收藏历程" sublabel="YEARS" />
