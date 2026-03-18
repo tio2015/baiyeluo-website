@@ -3,16 +3,21 @@ import Image from "next/image";
 import Link from "next/link";
 
 const donationHistory = [
-  { year: "2024", date: "2024年5月31日", place: "中国国家版本总馆（第二次）", desc: "向国家版本总馆第二次捐赠贝叶经及桦树皮文献。中宣部部长李书磊出席大会并讲话，中宣部副部长胡和平向捐赠者颁发入藏证书。", tag: "国家级典藏" },
+  { year: "接洽中", date: "进行中", place: "北京大学 · 清华大学", desc: "与北京大学及清华大学开展学术交流合作，具体事项接洽中。", tag: "学术合作", pending: true },
+  { year: "2024", date: "2024年12月15日", place: "重庆梁平双桂堂", desc: "向重庆梁平双桂堂迎请蒲甘王朝《吉祥经》贝叶经入藏，为这座千年禅林增添旷世文献珍藏。", tag: "捐赠典藏", link: "http://bjtime.china.com.cn/2024-12/14/content_42988324.html" },
+  { year: "2024", date: "2024年5月31日", place: "中国国家版本总馆（第二次）", desc: "向国家版本总馆第二次捐赠贝叶经及桦树皮文献。中央书记处书记、中宣部部长出席大会并讲话，中宣部分管日常工作的副部长向捐赠代表颁发入藏证书。", tag: "国家级典藏" },
   { year: "2023", date: "2023年7月31日", place: "中国国家版本总馆（第一次）", desc: "首次向中国国家版本总馆捐赠贝叶经及桦树皮文献，使国家版本馆的馆藏序列趋于完善，入藏证书编号 2023-FZ0011。", tag: "国家级典藏" },
-  { year: "2020", date: "2020年9月30日", place: "保定大佛光寺", desc: "向保定大佛光寺捐赠贝叶经，助力寺院文化传承。", tag: "捐赠典藏" },
-  { year: "2019", date: "2019年5月12日", place: "西安大慈恩寺（大雁塔）", desc: "向大慈恩寺捐赠一枚佛骨舍利及八份贝叶经。大雁塔正是当年玄奘法师译经之所。", tag: "捐赠典藏" },
-  { year: "2018", date: "2018年8月11日", place: "镇安兴隆寺", desc: "向镇安兴隆寺捐赠佛舍利，加强地方佛教文化交流。", tag: "捐赠交流" },
-  { year: "2018", date: "2018年1月24日", place: "庐山东林寺", desc: "向庐山东林寺捐赠古代贝叶经，持续推动贝叶经的归宿性保护。", tag: "捐赠典藏" },
-  { year: "2017", date: "2017年", place: "兰州大学贝叶经研究中心", desc: "与兰州大学共建贝叶经研究中心，2019年正式挂牌，成为国内首个以贝叶经为研究对象的专门学术机构。", tag: "学术合作" },
-  { year: "2016", date: "2016年", place: "北京八大处·丝路宝典展", desc: "参与「丝路宝典·盛世梵华」一带一路文物珍品展，向公众展示贝叶经实物。", tag: "公开展览" },
-  { year: "2015", date: "2015年", place: "台湾佛光山·星云法师", desc: "向星云法师及佛光山捐赠贝叶经，跨两岸推动佛教文化交流。", tag: "捐赠交流" },
-  { year: "2015", date: "2015年8月3日", place: "北京房山云居寺", desc: "向云居寺捐赠宋代贝叶经，云居寺是中国最重要的石经保存地之一。", tag: "捐赠典藏" },
+  { year: "2023", date: "2023年3月6日", place: "陕西宁山寺", desc: "向陕西宁山寺捐赠佛舍利及贝叶经入藏，并对彩虹桥学生进行慈善助学。", tag: "捐赠典藏" },
+  { year: "2021", date: "2021年4月8日", place: "河北保定大佛光寺", desc: "向保定大佛光寺迎请佛祖舍利，助力寺院法脉传承。", tag: "捐赠典藏" },
+  { year: "2020", date: "2020年10月14日", place: "台湾十方禅林", desc: "向台湾十方禅林捐赠贝叶经入藏，推动两岸佛教文化交流。", tag: "捐赠交流" },
+  { year: "2020", date: "2020年10月1日", place: "河北定兴大佛光寺", desc: "向河北定兴大佛光寺捐赠贝叶经，助力寺院文化典藏建设。", tag: "捐赠典藏" },
+  { year: "2019", date: "2019年11月24日", place: "澳中佛教总会（澳大利亚）", desc: "向澳中佛教总会捐赠佛舍利及贝叶经，开展国际佛教文化交流，将中国贝叶经典藏带向海外。", tag: "国际交流" },
+  { year: "2019", date: "2019年11月14日", place: "兰州大学贝叶经研究中心", desc: "与兰州大学敦煌学研究所共建贝叶经研究中心正式挂牌，成为国内首个以贝叶经为专门研究对象的学术机构，兰大敦煌学所所长郑炳林出席。", tag: "学术合作" },
+  { year: "2019", date: "2019年5月12日", place: "西安大慈恩寺（大雁塔）", desc: "向大慈恩寺捐赠佛骨舍利、贝叶经及四龙护佛十二环金锡杖。大雁塔正是当年玄奘法师取经归来译经之所，此次捐赠意义深远。", tag: "捐赠典藏" },
+  { year: "2018", date: "2018年11月18日", place: "洛阳师范学院大运河研究院", desc: "向河南洛阳师范学院大运河研究院捐赠大运河纪实影像文献，支持大运河文化遗产研究。", tag: "文化交流" },
+  { year: "2018", date: "2018年8月11日", place: "陕西镇安兴隆寺", desc: "向陕西镇安兴隆寺迎请佛舍利，加强地方佛教文化传承。", tag: "捐赠交流" },
+  { year: "2018", date: "2018年1月24日", place: "新加坡居士林", desc: "向新加坡居士林捐赠佛舍利，开展新加坡佛教界国际文化交流。", tag: "国际交流" },
+  { year: "2014", date: "2014年8月3日", place: "北京房山云居寺", desc: "向云居寺捐赠宋代贝叶经入藏。云居寺是中国最重要的石经保存地之一，此次入藏为国内贝叶经保护事业奠定重要基础。", tag: "捐赠典藏" },
 ];
 
 export default function NewsPage() {
@@ -144,71 +149,56 @@ export default function NewsPage() {
               </div>
             </div>
 
-            {/* Right: Image placeholder + note */}
+            {/* Right: Real Vatican photos */}
             <div>
+              {/* Main hero image */}
               <div style={{
-                background: "linear-gradient(135deg, #1c1510, #0e0c09)",
                 border: "1px solid rgba(196,151,58,0.25)",
-                aspectRatio: "4/3",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                position: "relative",
                 overflow: "hidden",
-                marginBottom: "1.5rem",
+                marginBottom: "1rem",
+                position: "relative",
               }}>
-                {/* Vatican cross watermark */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/vatican/pope-presenting-color.jpg"
+                  alt="白十源向教皇方济各敬赠贝叶经"
+                  style={{ width: "100%", display: "block", objectFit: "cover" }}
+                />
                 <div style={{
                   position: "absolute",
-                  fontFamily: "'EB Garamond',serif",
-                  fontSize: "6rem",
-                  color: "rgba(196,151,58,0.06)",
-                  userSelect: "none",
-                }}>✝</div>
-                <div style={{ textAlign: "center", position: "relative", zIndex: 1 }}>
-                  <div style={{
-                    fontFamily: "'EB Garamond',serif",
-                    fontSize: "0.8rem",
-                    color: "rgba(196,151,58,0.5)",
-                    letterSpacing: "0.2em",
-                    marginBottom: "0.75rem",
-                  }}>Vatican · Pope Francis</div>
-                  <div style={{
-                    fontFamily: "'Noto Serif SC',serif",
-                    fontSize: "0.85rem",
-                    color: "rgba(244,239,227,0.4)",
-                    letterSpacing: "0.1em",
-                  }}>图片资料补充中</div>
-                </div>
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  background: "linear-gradient(transparent, rgba(14,12,9,0.85))",
+                  padding: "2rem 1rem 0.75rem",
+                  fontFamily: "'Noto Serif SC',serif",
+                  fontSize: "0.78rem",
+                  color: "rgba(244,239,227,0.85)",
+                  letterSpacing: "0.08em",
+                }}>白十源向教皇方济各敬赠贝叶经 · 梵蒂冈</div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} style={{
-                    background: "linear-gradient(135deg, #1c1510, #0e0c09)",
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+                {[
+                  { src: "/images/vatican/pope-presenting-bw.jpg", alt: "敬赠现场（黑白）" },
+                  { src: "/images/vatican/sistine.jpg", alt: "西斯廷礼拜堂" },
+                  { src: "/images/vatican/crowd-phones.jpg", alt: "圣彼得广场现场" },
+                  { src: "/images/vatican/pope-presenting-color.jpg", alt: "教皇接受贝叶经" },
+                ].map((img) => (
+                  <div key={img.src + img.alt} style={{
                     border: "1px solid rgba(196,151,58,0.15)",
+                    overflow: "hidden",
                     aspectRatio: "4/3",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
                   }}>
-                    <span style={{
-                      fontFamily: "'EB Garamond',serif",
-                      fontSize: "0.65rem",
-                      color: "rgba(196,151,58,0.3)",
-                      letterSpacing: "0.15em",
-                    }}>现场图 {i}</span>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={img.src}
+                      alt={img.alt}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                    />
                   </div>
                 ))}
               </div>
-              <p style={{
-                fontFamily: "'Noto Serif SC',serif",
-                fontSize: "0.75rem",
-                color: "rgba(28,28,28,0.4)",
-                marginTop: "0.75rem",
-                textAlign: "center",
-              }}>梵蒂冈现场影像资料，请提供后上传</p>
             </div>
           </div>
         </div>
