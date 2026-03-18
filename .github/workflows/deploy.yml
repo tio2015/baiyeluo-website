@@ -31,7 +31,7 @@ jobs:
           sudo mv ossutil-v1.7.19-linux-amd64/ossutil /usr/local/bin/ossutil
           sudo chmod +x /usr/local/bin/ossutil
           rm -rf ossutil.zip ossutil-v1.7.19-linux-amd64
-          ossutil version
+          ossutil version || true
 
       - name: 配置 ossutil
         run: |
@@ -40,21 +40,21 @@ jobs:
             -i "${{ secrets.OSS_ACCESS_KEY_ID }}" \
             -k "${{ secrets.OSS_ACCESS_KEY_SECRET }}"
 
-      - name: 上传静态文件到 OSS
+      - name: 上传静态文件到 OSS（pattra-net bucket）
         run: |
           # 上传 HTML（不缓存）
           find out -name "*.html" | while read f; do
-            key="baiyeluo/${f#out/}"
-            ossutil cp "$f" "oss://yiyeguizhen-web-hk/$key" \
+            key="${f#out/}"
+            ossutil cp "$f" "oss://pattra-net/$key" \
               --meta "Cache-Control:no-cache, no-store, must-revalidate" -f
           done
 
-          # 上传静态资源（长期缓存）
-          ossutil cp out/_next/ oss://yiyeguizhen-web-hk/baiyeluo/_next/ \
+          # 上传 _next 静态资源（长期缓存）
+          ossutil cp out/_next/ oss://pattra-net/_next/ \
             --meta "Cache-Control:max-age=31536000" -r -f
 
-          # 上传其他资源（images 等）
-          ossutil cp out/images/ oss://yiyeguizhen-web-hk/baiyeluo/images/ \
+          # 上传 images 等其他资源
+          ossutil cp out/images/ oss://pattra-net/images/ \
             --meta "Cache-Control:max-age=86400" -r -f 2>/dev/null || true
 
-          echo "✅ 贝叶经网站部署完成 → yiyeguizhen.com/baiyeluo/"
+          echo "✅ 部署完成 → pattra.net"
