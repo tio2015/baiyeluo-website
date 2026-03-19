@@ -135,8 +135,16 @@ jobs:
           # 5a. 获取验证 token
           try:
               token_result = bucket.create_bucket_cname_token(CUSTOM_DOMAIN)
-              cname_token = token_result.cname_token
-              print(f'CNAME token: {cname_token}')
+              print(f'token_result attrs: {[a for a in dir(token_result) if not a.startswith("_")]}')
+              # 试各种属性名
+              cname_token = None
+              for attr in ['cname_token', 'token', 'Token', 'CnameToken']:
+                  if hasattr(token_result, attr):
+                      cname_token = getattr(token_result, attr)
+                      print(f'CNAME token ({attr}): {cname_token}')
+                      break
+              if not cname_token:
+                  print(f'token_result vars: {vars(token_result)}')
           except Exception as e:
               print(f'create_bucket_cname_token: {e}')
               cname_token = None
