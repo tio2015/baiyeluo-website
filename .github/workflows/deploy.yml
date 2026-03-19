@@ -171,9 +171,21 @@ jobs:
           print(f'CreateCnameToken: {r.status_code}')
           cname_token = None
           if r.status_code == 200:
+              print(f'Token XML: {r.text[:500]}')
               try:
                   root = ET.fromstring(r.text)
-                  cname_token = root.findtext('.//CnameToken') or root.findtext('CnameToken')
+                  # 尝试所有可能的路径
+                  for path in ['.//CnameToken', 'CnameToken', './/Token', './/token']:
+                      val = root.findtext(path)
+                      if val:
+                          cname_token = val
+                          break
+                  # 也试 namespace 方式
+                  if not cname_token:
+                      for child in root.iter():
+                          if 'token' in child.tag.lower() or 'Token' in child.tag:
+                              cname_token = child.text
+                              break
                   print(f'Token: {cname_token}')
               except Exception as pe:
                   print(f'Parse token: {pe}, body={r.text[:300]}')
