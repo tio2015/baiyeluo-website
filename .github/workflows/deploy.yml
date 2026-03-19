@@ -141,22 +141,96 @@ jobs:
           bucket.put_bucket_website(website)
           print('Static website hosting: enabled')
 
-          # 绑定自定义域名（需域名已有 ICP）
-          try:
-              from oss2.models import CnameConfiguration
-              bucket.put_bucket_cname(CnameConfiguration(domain='pattra.yiyeguizhen.com'))
-              print('Domain binding: pattra.yiyeguizhen.com OK')
-          except Exception as e:
-              # 可能需要先验证域名所有权，打印 token
-              err_str = str(e)
-              print(f'Domain binding note: {err_str[:300]}')
-              if 'NeedVerifyDomainOwnership' in err_str or 'token' in err_str.lower():
+          # 绑定自定义域名（原始 HTTP API + 自动 DNS 验证）
+          import xml.etree.ElementTree as ET
+          import uuid as uuid_mod
+
+          CUSTOM_DOMAIN = 'pattra.yiyeguizhen.com'
+          BUCKET_HOST = f'{BUCKET_NAME}.oss-cn-shanghai.aliyuncs.com'
+
+          def oss_raw(method, ak, sk, bucket_name, query_suffix, body, content_type='application/xml'):
+              date_str = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
+              content_md5 = base64.b64encode(hashlib.md5(body).digest()).decode() if body else ''
+              canonical_resource = f'/{bucket_name}/?{query_suffix}'
+              string_to_sign = f'{method}\n{content_md5}\n{content_type}\n{date_str}\n{canonical_resource}'
+              sig = base64.b64encode(hmac.new(sk.encode(), string_to_sign.encode(), hashlib.sha1).digest()).decode()
+              hdrs = {
+                  'Authorization': f'OSS {ak}:{sig}',
+                  'Content-Type': content_type,
+                  'Date': date_str,
+                  'Host': BUCKET_HOST,
+              }
+              if body:
+                  hdrs['Content-MD5'] = content_md5
+              url = f'https://{BUCKET_HOST}/?{query_suffix}'
+              return requests.request(method, url, data=body if body else None, headers=hdrs, timeout=15)
+
+          # Step 1: 申请 CNAME Token
+          token_body = f'<?xml version="1.0" encoding="UTF-8"?><BucketCnameConfiguration><Cname><Domain>{CUSTOM_DOMAIN}</Domain></Cname></BucketCnameConfiguration>'.encode()
+          r = oss_raw('POST', AK, SK, BUCKET_NAME, 'cname&comp=token', token_body)
+          print(f'CreateCnameToken: {r.status_code}')
+          cname_token = None
+          if r.status_code == 200:
+              try:
+                  root = ET.fromstring(r.text)
+                  cname_token = root.findtext('.//CnameToken') or root.findtext('CnameToken')
+                  print(f'Token: {cname_token}')
+              except Exception as pe:
+                  print(f'Parse token: {pe}, body={r.text[:300]}')
+          else:
+              print(f'Token resp: {r.text[:300]}')
+
+          # Step 2: 自动加 DNS TXT 验证记录
+          if cname_token:
+              import urllib.parse, urllib.request
+              def dns_api_call(action, extra):
+                  params = {
+                      'Format': 'JSON', 'Version': '2015-01-09', 'AccessKeyId': AK,
+                      'SignatureMethod': 'HMAC-SHA1',
+                      'Timestamp': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
+                      'SignatureVersion': '1.0', 'SignatureNonce': str(uuid_mod.uuid4()),
+                      'Action': action,
+                  }
+                  params.update(extra)
+                  sorted_p = sorted(params.items())
+                  qs = urllib.parse.urlencode(sorted_p)
+                  sts = 'GET&' + urllib.parse.quote('/', safe='') + '&' + urllib.parse.quote(qs, safe='')
+                  sig2 = base64.b64encode(hmac.new((SK+'&').encode(), sts.encode(), hashlib.sha1).digest()).decode()
+                  params['Signature'] = sig2
+                  url2 = 'https://alidns.aliyuncs.com/?' + urllib.parse.urlencode(params)
+                  import json as json_mod
                   try:
-                      result = bucket.get_bucket_cname_token('pattra.yiyeguizhen.com')
-                      print(f'域名验证 Token: {result.cname_token}')
-                      print(f'请在 DNS 添加 TXT 记录：_dnsauth.pattra IN TXT "{result.cname_token}"')
-                  except Exception as e2:
-                      print(f'Token获取: {e2}')
+                      with urllib.request.urlopen(url2, timeout=15) as resp2:
+                          return json_mod.loads(resp2.read().decode())
+                  except urllib.error.HTTPError as ex:
+                      return json_mod.loads(ex.read().decode())
+
+              # 检查是否已有此 TXT 记录
+              existing = dns_api_call('DescribeDomainRecords', {
+                  'DomainName': 'yiyeguizhen.com', 'RRKeyWord': '_dnsauth.pattra', 'Type': 'TXT'
+              })
+              records = existing.get('DomainRecords', {}).get('Record', [])
+              if records:
+                  print(f'TXT 记录已存在，更新中...')
+                  upd = dns_api_call('UpdateDomainRecord', {
+                      'RecordId': records[0]['RecordId'], 'RR': '_dnsauth.pattra',
+                      'Type': 'TXT', 'Value': cname_token, 'TTL': '600'
+                  })
+                  print(f'TXT 更新: {upd}')
+              else:
+                  add = dns_api_call('AddDomainRecord', {
+                      'DomainName': 'yiyeguizhen.com', 'RR': '_dnsauth.pattra',
+                      'Type': 'TXT', 'Value': cname_token, 'TTL': '600'
+                  })
+                  print(f'TXT 添加: {add}')
+
+              import time
+              time.sleep(5)
+
+              # Step 3: 绑定 CNAME
+              cname_body = f'<?xml version="1.0" encoding="UTF-8"?><BucketCnameConfiguration><Cname><Domain>{CUSTOM_DOMAIN}</Domain></Cname></BucketCnameConfiguration>'.encode()
+              r2 = oss_raw('POST', AK, SK, BUCKET_NAME, 'cname', cname_body)
+              print(f'PutCname: {r2.status_code} {r2.text[:200]}')
           PYEOF
 
       - name: 部署到上海 OSS（pattra.yiyeguizhen.com 国内访问）
