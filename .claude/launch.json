@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "yaoji-dev",
-      "runtimeExecutable": "/opt/homebrew/bin/node",
-      "runtimeArgs": ["/tmp/baiyeluo-site/node_modules/.bin/next", "dev", "--port", "3107"],
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "3107"],
       "port": 3107
     }
   ]
