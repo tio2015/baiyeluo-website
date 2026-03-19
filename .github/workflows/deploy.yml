@@ -24,10 +24,10 @@ jobs:
         env:
           NEXT_TELEMETRY_DISABLED: 1
 
-      - name: 安装依赖（oss2）
-        run: pip install oss2
+      - name: 安装依赖（oss2 最新版）
+        run: pip install "oss2>=2.18.0"
 
-      - name: 上传到 OSS（pattra-net bucket）
+      - name: 部署到香港 OSS（pattra.net 国际访问）
         env:
           OSS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
           OSS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
@@ -49,7 +49,6 @@ jobs:
               oss_key = str(local_path.relative_to(out_dir))
               mime = mimetypes.guess_type(str(local_path))[0] or 'application/octet-stream'
 
-              # 缓存策略
               if local_path.suffix == '.html':
                   cache = 'no-cache, no-store, must-revalidate'
               elif '_next' in oss_key:
@@ -57,15 +56,93 @@ jobs:
               else:
                   cache = 'max-age=86400'
 
-              headers = {
-                  'Content-Type': mime,
-                  'Cache-Control': cache,
-              }
-
+              headers = {'Content-Type': mime, 'Cache-Control': cache}
               bucket.put_object_from_file(oss_key, str(local_path), headers=headers)
               total += 1
               if total % 10 == 0:
                   print(f'  上传中... {total} 个文件')
 
-          print(f'✅ 部署完成：共上传 {total} 个文件 → pattra.net')
+          print(f'✅ 香港部署完成：共上传 {total} 个文件 → pattra.net')
+          PYEOF
+
+      - name: 配置上海 OSS（pattra.yiyeguizhen.com 国内访问）
+        env:
+          OSS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
+          OSS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+        run: |
+          python3 << 'PYEOF'
+          import oss2, os, json
+
+          AK = os.environ['OSS_KEY_ID']
+          SK = os.environ['OSS_KEY_SECRET']
+          auth = oss2.Auth(AK, SK)
+          bucket = oss2.Bucket(auth, 'https://oss-cn-shanghai.aliyuncs.com', 'pattra-yiyeguizhen')
+
+          # 创建 bucket（已存在则忽略）
+          try:
+              bucket.create_bucket()
+              print('Bucket created')
+          except Exception as e:
+              if 'BucketAlreadyExists' in str(e) or 'already' in str(e).lower():
+                  print('Bucket already exists')
+              else:
+                  raise
+
+          # 关闭 Block Public Access（oss2 >= 2.18 支持）
+          try:
+              from oss2.models import BlockPublicAccessConfig
+              bucket.put_bucket_public_access_block(BlockPublicAccessConfig(block_public_access=False))
+              print('Block Public Access: disabled')
+          except Exception as e:
+              print(f'BPA note: {e}')
+
+          # 设置公开读 ACL
+          try:
+              bucket.put_bucket_acl(oss2.BUCKET_ACL_PUBLIC_READ)
+              print('ACL: public-read OK')
+          except Exception as e:
+              print(f'ACL: {e}')
+
+          # 静态网站托管
+          website = oss2.models.BucketWebsite('index.html', '404.html')
+          bucket.put_bucket_website(website)
+          print('Static website hosting: enabled')
+          PYEOF
+
+      - name: 部署到上海 OSS（pattra.yiyeguizhen.com 国内访问）
+        env:
+          OSS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
+          OSS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+        run: |
+          python3 << 'PYEOF'
+          import oss2, os, mimetypes
+          from pathlib import Path
+
+          auth = oss2.Auth(os.environ['OSS_KEY_ID'], os.environ['OSS_KEY_SECRET'])
+          bucket = oss2.Bucket(auth, 'https://oss-cn-shanghai.aliyuncs.com', 'pattra-yiyeguizhen')
+
+          out_dir = Path('out')
+          total = 0
+
+          for local_path in out_dir.rglob('*'):
+              if not local_path.is_file():
+                  continue
+
+              oss_key = str(local_path.relative_to(out_dir))
+              mime = mimetypes.guess_type(str(local_path))[0] or 'application/octet-stream'
+
+              if local_path.suffix == '.html':
+                  cache = 'no-cache, no-store, must-revalidate'
+              elif '_next' in oss_key:
+                  cache = 'max-age=31536000, immutable'
+              else:
+                  cache = 'max-age=86400'
+
+              headers = {'Content-Type': mime, 'Cache-Control': cache}
+              bucket.put_object_from_file(oss_key, str(local_path), headers=headers)
+              total += 1
+              if total % 10 == 0:
+                  print(f'  上传中... {total} 个文件')
+
+          print(f'✅ 上海部署完成：共上传 {total} 个文件 → pattra.yiyeguizhen.com')
           PYEOF
