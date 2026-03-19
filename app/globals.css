@@ -81,3 +81,40 @@ h1,h2,h3,h4,h5 {
 ::-webkit-scrollbar-thumb { background: rgba(196,151,58,0.4); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 ::selection { background: rgba(196,151,58,0.18); }
+
+/* ── 移动端响应式（覆盖 inline grid styles）── */
+@media (max-width: 768px) {
+  /* 双列 → 单列 */
+  div[style*="grid-template-columns: 1fr 1fr"],
+  div[style*="gridTemplateColumns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+
+  /* 三列 → 单列 */
+  div[style*="grid-template-columns: repeat(3"] {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+
+  /* 四列 → 双列（统计数字保持2列可读） */
+  div[style*="grid-template-columns: repeat(4"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* 字体缩小，避免溢出 */
+  h1, h2 {
+    word-break: break-word;
+  }
+
+  /* Hero 区内边距收窄 */
+  section {
+    padding-left: 1.25rem !important;
+    padding-right: 1.25rem !important;
+  }
+
+  /* 导航栏手机处理 */
+  nav > div > div:last-child {
+    display: none;
+  }
+}
