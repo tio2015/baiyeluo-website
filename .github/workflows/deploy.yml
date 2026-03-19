@@ -239,10 +239,13 @@ jobs:
               import time
               time.sleep(5)
 
-              # Step 3: 绑定 CNAME
+              # Step 3: 绑定 CNAME（PUT 方法）
               cname_body = f'<?xml version="1.0" encoding="UTF-8"?><BucketCnameConfiguration><Cname><Domain>{CUSTOM_DOMAIN}</Domain></Cname></BucketCnameConfiguration>'.encode()
-              r2 = oss_raw('POST', AK, SK, BUCKET_NAME, 'cname', cname_body)
-              print(f'PutCname: {r2.status_code} {r2.text[:200]}')
+              r2 = oss_raw('PUT', AK, SK, BUCKET_NAME, 'cname', cname_body)
+              print(f'PutCname: {r2.status_code} {r2.text[:300]}')
+              if r2.status_code != 200:
+                  # 有时需要等 DNS 传播，记录当前 token 供后续重试
+                  print(f'注意：如验证失败，TXT token={cname_token}')
           PYEOF
 
       - name: 部署到上海 OSS（pattra.yiyeguizhen.com 国内访问）
