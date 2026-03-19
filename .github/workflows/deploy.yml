@@ -71,194 +71,101 @@ jobs:
           OSS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
         run: |
           python3 << 'PYEOF'
-          import oss2, os, hmac, hashlib, base64, datetime, requests
+          import oss2, os, hmac, hashlib, base64, datetime, requests, urllib.parse, urllib.request, uuid, json, time
 
           AK = os.environ['OSS_KEY_ID']
           SK = os.environ['OSS_KEY_SECRET']
           BUCKET_NAME = 'pattra-yiyeguizhen'
-          REGION = 'cn-shanghai'
+          CUSTOM_DOMAIN = 'pattra.yiyeguizhen.com'
 
           auth = oss2.Auth(AK, SK)
           bucket = oss2.Bucket(auth, 'https://oss-cn-shanghai.aliyuncs.com', BUCKET_NAME)
 
-          def oss_sign_put(ak, sk, bucket_name, resource_suffix, body, content_type='application/xml'):
-              """生成 OSS HMAC-SHA1 签名，用于 PUT 请求"""
+          def oss_sign_put(ak, sk, bucket_name, path, body):
               date_str = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
               content_md5 = base64.b64encode(hashlib.md5(body).digest()).decode()
-              if bucket_name:
-                  canonical_resource = f'/{bucket_name}/{resource_suffix}'
-                  host = f'{bucket_name}.oss-cn-shanghai.aliyuncs.com'
-              else:
-                  canonical_resource = f'/{resource_suffix}'
-                  host = 'oss-cn-shanghai.aliyuncs.com'
-              string_to_sign = f'PUT\n{content_md5}\n{content_type}\n{date_str}\n{canonical_resource}'
-              sig = base64.b64encode(hmac.new(sk.encode(), string_to_sign.encode(), hashlib.sha1).digest()).decode()
-              return {
-                  'Authorization': f'OSS {ak}:{sig}',
-                  'Content-Type': content_type,
-                  'Content-MD5': content_md5,
-                  'Date': date_str,
-                  'Host': host,
-              }, host
+              host = f'{bucket_name}.oss-cn-shanghai.aliyuncs.com' if bucket_name else 'oss-cn-shanghai.aliyuncs.com'
+              canonical = f'/{bucket_name}/{path}' if bucket_name else f'/{path}'
+              sts = f'PUT\n{content_md5}\napplication/xml\n{date_str}\n{canonical}'
+              sig = base64.b64encode(hmac.new(sk.encode(), sts.encode(), hashlib.sha1).digest()).decode()
+              return {'Authorization': f'OSS {ak}:{sig}', 'Content-Type': 'application/xml',
+                      'Content-MD5': content_md5, 'Date': date_str, 'Host': host}, host
 
+          def dns_call(action, extra):
+              params = {'Format':'JSON','Version':'2015-01-09','AccessKeyId':AK,
+                        'SignatureMethod':'HMAC-SHA1','SignatureVersion':'1.0',
+                        'Timestamp':datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
+                        'SignatureNonce':str(uuid.uuid4()),'Action':action}
+              params.update(extra)
+              qs = urllib.parse.urlencode(sorted(params.items()))
+              sts = 'GET&%2F&' + urllib.parse.quote(qs, safe='')
+              sig = base64.b64encode(hmac.new((SK+'&').encode(), sts.encode(), hashlib.sha1).digest()).decode()
+              params['Signature'] = sig
+              url = 'https://alidns.aliyuncs.com/?' + urllib.parse.urlencode(params)
+              try:
+                  with urllib.request.urlopen(url, timeout=15) as r: return json.loads(r.read().decode())
+              except urllib.error.HTTPError as e: return json.loads(e.read().decode())
+
+          # 1. 关闭 BPA
           bpa_body = b'<?xml version="1.0" encoding="UTF-8"?><PublicAccessBlockConfiguration><BlockPublicAccess>false</BlockPublicAccess></PublicAccessBlockConfiguration>'
+          for bn in ['', BUCKET_NAME]:
+              h, host = oss_sign_put(AK, SK, bn, '?publicAccessBlock', bpa_body)
+              r = requests.put(f'https://{host}/?publicAccessBlock', data=bpa_body, headers=h, timeout=10)
+              print(f'BPA {"账号" if not bn else "Bucket"}: {r.status_code}')
 
-          # 先试关闭账号级 BPA（service endpoint）
-          hdrs, host = oss_sign_put(AK, SK, '', '?publicAccessBlock', bpa_body)
-          try:
-              r = requests.put(f'https://{host}/?publicAccessBlock', data=bpa_body, headers=hdrs, timeout=10)
-              print(f'账号级 BPA disable: {r.status_code} {r.text[:200]}')
-          except Exception as e:
-              print(f'账号级 BPA: {e}')
-
-          # 再关闭 bucket 级 BPA
-          hdrs, host = oss_sign_put(AK, SK, BUCKET_NAME, '?publicAccessBlock', bpa_body)
-          try:
-              r = requests.put(f'https://{host}/?publicAccessBlock', data=bpa_body, headers=hdrs, timeout=10)
-              print(f'Bucket 级 BPA disable: {r.status_code} {r.text[:200]}')
-          except Exception as e:
-              print(f'Bucket BPA: {e}')
-
-          # 创建 bucket（已存在则忽略）
+          # 2. 创建 bucket
           try:
               bucket.create_bucket()
               print('Bucket created')
           except Exception as e:
-              if 'BucketAlreadyExists' in str(e) or 'already' in str(e).lower():
-                  print('Bucket already exists')
-              else:
-                  raise
+              print('Bucket already exists' if 'already' in str(e).lower() else f'create: {e}')
 
-          # 设置公开读 ACL
+          # 3. ACL
           try:
               bucket.put_bucket_acl(oss2.BUCKET_ACL_PUBLIC_READ)
               print('ACL: public-read OK')
           except Exception as e:
               print(f'ACL: {e}')
 
-          # 静态网站托管
-          website = oss2.models.BucketWebsite('index.html', '404.html')
-          bucket.put_bucket_website(website)
-          print('Static website hosting: enabled')
+          # 4. 静态网站托管
+          bucket.put_bucket_website(oss2.models.BucketWebsite('index.html', '404.html'))
+          print('Static website: enabled')
 
-          # 绑定自定义域名（原始 HTTP API + 自动 DNS 验证）
-          import xml.etree.ElementTree as ET
-          import uuid as uuid_mod
+          # 5. CNAME 绑定（oss2 2.19.1 原生 API）
+          # 5a. 获取验证 token
+          try:
+              token_result = bucket.create_bucket_cname_token(CUSTOM_DOMAIN)
+              cname_token = token_result.cname_token
+              print(f'CNAME token: {cname_token}')
+          except Exception as e:
+              print(f'create_bucket_cname_token: {e}')
+              cname_token = None
 
-          CUSTOM_DOMAIN = 'pattra.yiyeguizhen.com'
-          BUCKET_HOST = f'{BUCKET_NAME}.oss-cn-shanghai.aliyuncs.com'
-
-          def oss_raw(method, ak, sk, bucket_name, query_suffix, body, content_type='application/xml'):
-              date_str = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
-              content_md5 = base64.b64encode(hashlib.md5(body).digest()).decode() if body else ''
-              canonical_resource = f'/{bucket_name}/?{query_suffix}'
-              string_to_sign = f'{method}\n{content_md5}\n{content_type}\n{date_str}\n{canonical_resource}'
-              sig = base64.b64encode(hmac.new(sk.encode(), string_to_sign.encode(), hashlib.sha1).digest()).decode()
-              hdrs = {
-                  'Authorization': f'OSS {ak}:{sig}',
-                  'Content-Type': content_type,
-                  'Date': date_str,
-                  'Host': BUCKET_HOST,
-              }
-              if body:
-                  hdrs['Content-MD5'] = content_md5
-              url = f'https://{BUCKET_HOST}/?{query_suffix}'
-              return requests.request(method, url, data=body if body else None, headers=hdrs, timeout=15)
-
-          # Step 1: 申请 CNAME Token
-          token_body = f'<?xml version="1.0" encoding="UTF-8"?><BucketCnameConfiguration><Cname><Domain>{CUSTOM_DOMAIN}</Domain></Cname></BucketCnameConfiguration>'.encode()
-          r = oss_raw('POST', AK, SK, BUCKET_NAME, 'cname&comp=token', token_body)
-          print(f'CreateCnameToken: {r.status_code}')
-          cname_token = None
-          if r.status_code == 200:
-              print(f'Token XML: {r.text[:500]}')
-              try:
-                  root = ET.fromstring(r.text)
-                  # 尝试所有可能的路径
-                  for path in ['.//CnameToken', 'CnameToken', './/Token', './/token']:
-                      val = root.findtext(path)
-                      if val:
-                          cname_token = val
-                          break
-                  # 也试 namespace 方式
-                  if not cname_token:
-                      for child in root.iter():
-                          if 'token' in child.tag.lower() or 'Token' in child.tag:
-                              cname_token = child.text
-                              break
-                  print(f'Token: {cname_token}')
-              except Exception as pe:
-                  print(f'Parse token: {pe}, body={r.text[:300]}')
-          else:
-              print(f'Token resp: {r.text[:300]}')
-
-          # Step 2: 自动加 DNS TXT 验证记录
+          # 5b. 更新 DNS TXT 验证记录
           if cname_token:
-              import urllib.parse, urllib.request
-              def dns_api_call(action, extra):
-                  params = {
-                      'Format': 'JSON', 'Version': '2015-01-09', 'AccessKeyId': AK,
-                      'SignatureMethod': 'HMAC-SHA1',
-                      'Timestamp': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
-                      'SignatureVersion': '1.0', 'SignatureNonce': str(uuid_mod.uuid4()),
-                      'Action': action,
-                  }
-                  params.update(extra)
-                  sorted_p = sorted(params.items())
-                  qs = urllib.parse.urlencode(sorted_p)
-                  sts = 'GET&' + urllib.parse.quote('/', safe='') + '&' + urllib.parse.quote(qs, safe='')
-                  sig2 = base64.b64encode(hmac.new((SK+'&').encode(), sts.encode(), hashlib.sha1).digest()).decode()
-                  params['Signature'] = sig2
-                  url2 = 'https://alidns.aliyuncs.com/?' + urllib.parse.urlencode(params)
-                  import json as json_mod
-                  try:
-                      with urllib.request.urlopen(url2, timeout=15) as resp2:
-                          return json_mod.loads(resp2.read().decode())
-                  except urllib.error.HTTPError as ex:
-                      return json_mod.loads(ex.read().decode())
-
-              # 检查是否已有此 TXT 记录
-              existing = dns_api_call('DescribeDomainRecords', {
-                  'DomainName': 'yiyeguizhen.com', 'RRKeyWord': '_dnsauth.pattra', 'Type': 'TXT'
-              })
+              existing = dns_call('DescribeDomainRecords', {
+                  'DomainName':'yiyeguizhen.com','RRKeyWord':'_dnsauth.pattra','Type':'TXT'})
               records = existing.get('DomainRecords', {}).get('Record', [])
               if records:
-                  print(f'TXT 记录已存在，更新中...')
-                  upd = dns_api_call('UpdateDomainRecord', {
+                  r2 = dns_call('UpdateDomainRecord', {
                       'RecordId': records[0]['RecordId'], 'RR': '_dnsauth.pattra',
-                      'Type': 'TXT', 'Value': cname_token, 'TTL': '600'
-                  })
-                  print(f'TXT 更新: {upd}')
+                      'Type': 'TXT', 'Value': cname_token, 'TTL': '600'})
+                  print(f'TXT 更新: {r2.get("RecordId") or r2.get("Code")}')
               else:
-                  add = dns_api_call('AddDomainRecord', {
-                      'DomainName': 'yiyeguizhen.com', 'RR': '_dnsauth.pattra',
-                      'Type': 'TXT', 'Value': cname_token, 'TTL': '600'
-                  })
-                  print(f'TXT 添加: {add}')
+                  r2 = dns_call('AddDomainRecord', {
+                      'DomainName':'yiyeguizhen.com','RR':'_dnsauth.pattra',
+                      'Type':'TXT','Value':cname_token,'TTL':'600'})
+                  print(f'TXT 添加: {r2.get("RecordId") or r2.get("Code")}')
 
-              import time
-              time.sleep(5)
+              time.sleep(10)
 
-              # Step 3: 绑定 CNAME（先用 oss2 内置，再回退原始 API）
-              bound = False
-              # 3a: oss2 原生方法
-              for cls_name in ['BucketCname', 'CnameConfiguration']:
-                  try:
-                      cls = getattr(oss2.models, cls_name, None)
-                      if cls:
-                          bucket.put_bucket_cname(cls(CUSTOM_DOMAIN))
-                          print(f'CNAME 绑定成功（oss2.models.{cls_name}）')
-                          bound = True
-                          break
-                  except Exception as e3:
-                      print(f'oss2 {cls_name}: {e3}')
-              # 3b: 打印当前 oss2 cname 相关方法
-              if not bound:
-                  cname_methods = [m for m in dir(bucket) if 'cname' in m.lower() or 'Cname' in m]
-                  print(f'oss2 cname methods: {cname_methods}')
-                  cname_models = [m for m in dir(oss2.models) if 'cname' in m.lower() or 'Cname' in m]
-                  print(f'oss2 cname models: {cname_models}')
-                  print(f'注意：TXT token={cname_token}, 手动绑定 CNAME 后可访问')
+              # 5c. 绑定 CNAME
+              try:
+                  req = oss2.models.PutBucketCnameRequest(CUSTOM_DOMAIN)
+                  bucket.put_bucket_cname(req)
+                  print(f'CNAME 绑定成功: {CUSTOM_DOMAIN}')
+              except Exception as e:
+                  print(f'put_bucket_cname: {e}')
           PYEOF
 
       - name: 部署到上海 OSS（pattra.yiyeguizhen.com 国内访问）
