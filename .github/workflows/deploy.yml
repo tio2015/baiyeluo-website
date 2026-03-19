@@ -239,13 +239,26 @@ jobs:
               import time
               time.sleep(5)
 
-              # Step 3: 绑定 CNAME（POST，不带 XML 声明头）
-              # oss2 内部用 POST /?cname
-              cname_body = f'<BucketCnameConfiguration><Cname><Domain>{CUSTOM_DOMAIN}</Domain></Cname></BucketCnameConfiguration>'.encode()
-              r2 = oss_raw('POST', AK, SK, BUCKET_NAME, 'cname', cname_body)
-              print(f'PutCname POST: {r2.status_code} {r2.text[:400]}')
-              if r2.status_code != 200:
-                  print(f'注意：TXT token={cname_token}')
+              # Step 3: 绑定 CNAME（先用 oss2 内置，再回退原始 API）
+              bound = False
+              # 3a: oss2 原生方法
+              for cls_name in ['BucketCname', 'CnameConfiguration']:
+                  try:
+                      cls = getattr(oss2.models, cls_name, None)
+                      if cls:
+                          bucket.put_bucket_cname(cls(CUSTOM_DOMAIN))
+                          print(f'CNAME 绑定成功（oss2.models.{cls_name}）')
+                          bound = True
+                          break
+                  except Exception as e3:
+                      print(f'oss2 {cls_name}: {e3}')
+              # 3b: 打印当前 oss2 cname 相关方法
+              if not bound:
+                  cname_methods = [m for m in dir(bucket) if 'cname' in m.lower() or 'Cname' in m]
+                  print(f'oss2 cname methods: {cname_methods}')
+                  cname_models = [m for m in dir(oss2.models) if 'cname' in m.lower() or 'Cname' in m]
+                  print(f'oss2 cname models: {cname_models}')
+                  print(f'注意：TXT token={cname_token}, 手动绑定 CNAME 后可访问')
           PYEOF
 
       - name: 部署到上海 OSS（pattra.yiyeguizhen.com 国内访问）
