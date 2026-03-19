@@ -71,12 +71,53 @@ jobs:
           OSS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
         run: |
           python3 << 'PYEOF'
-          import oss2, os, json
+          import oss2, os, hmac, hashlib, base64, datetime, requests
 
           AK = os.environ['OSS_KEY_ID']
           SK = os.environ['OSS_KEY_SECRET']
+          BUCKET_NAME = 'pattra-yiyeguizhen'
+          REGION = 'cn-shanghai'
+
           auth = oss2.Auth(AK, SK)
-          bucket = oss2.Bucket(auth, 'https://oss-cn-shanghai.aliyuncs.com', 'pattra-yiyeguizhen')
+          bucket = oss2.Bucket(auth, 'https://oss-cn-shanghai.aliyuncs.com', BUCKET_NAME)
+
+          def oss_sign_put(ak, sk, bucket_name, resource_suffix, body, content_type='application/xml'):
+              """生成 OSS HMAC-SHA1 签名，用于 PUT 请求"""
+              date_str = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
+              content_md5 = base64.b64encode(hashlib.md5(body).digest()).decode()
+              if bucket_name:
+                  canonical_resource = f'/{bucket_name}/{resource_suffix}'
+                  host = f'{bucket_name}.oss-cn-shanghai.aliyuncs.com'
+              else:
+                  canonical_resource = f'/{resource_suffix}'
+                  host = 'oss-cn-shanghai.aliyuncs.com'
+              string_to_sign = f'PUT\n{content_md5}\n{content_type}\n{date_str}\n{canonical_resource}'
+              sig = base64.b64encode(hmac.new(sk.encode(), string_to_sign.encode(), hashlib.sha1).digest()).decode()
+              return {
+                  'Authorization': f'OSS {ak}:{sig}',
+                  'Content-Type': content_type,
+                  'Content-MD5': content_md5,
+                  'Date': date_str,
+                  'Host': host,
+              }, host
+
+          bpa_body = b'<?xml version="1.0" encoding="UTF-8"?><PublicAccessBlockConfiguration><BlockPublicAccess>false</BlockPublicAccess></PublicAccessBlockConfiguration>'
+
+          # 先试关闭账号级 BPA（service endpoint）
+          hdrs, host = oss_sign_put(AK, SK, '', '?publicAccessBlock', bpa_body)
+          try:
+              r = requests.put(f'https://{host}/?publicAccessBlock', data=bpa_body, headers=hdrs, timeout=10)
+              print(f'账号级 BPA disable: {r.status_code} {r.text[:200]}')
+          except Exception as e:
+              print(f'账号级 BPA: {e}')
+
+          # 再关闭 bucket 级 BPA
+          hdrs, host = oss_sign_put(AK, SK, BUCKET_NAME, '?publicAccessBlock', bpa_body)
+          try:
+              r = requests.put(f'https://{host}/?publicAccessBlock', data=bpa_body, headers=hdrs, timeout=10)
+              print(f'Bucket 级 BPA disable: {r.status_code} {r.text[:200]}')
+          except Exception as e:
+              print(f'Bucket BPA: {e}')
 
           # 创建 bucket（已存在则忽略）
           try:
@@ -87,14 +128,6 @@ jobs:
                   print('Bucket already exists')
               else:
                   raise
-
-          # 关闭 Block Public Access（oss2 >= 2.18 支持）
-          try:
-              from oss2.models import BlockPublicAccessConfig
-              bucket.put_bucket_public_access_block(BlockPublicAccessConfig(block_public_access=False))
-              print('Block Public Access: disabled')
-          except Exception as e:
-              print(f'BPA note: {e}')
 
           # 设置公开读 ACL
           try:
