@@ -140,6 +140,23 @@ jobs:
           website = oss2.models.BucketWebsite('index.html', '404.html')
           bucket.put_bucket_website(website)
           print('Static website hosting: enabled')
+
+          # 绑定自定义域名（需域名已有 ICP）
+          try:
+              from oss2.models import CnameConfiguration
+              bucket.put_bucket_cname(CnameConfiguration(domain='pattra.yiyeguizhen.com'))
+              print('Domain binding: pattra.yiyeguizhen.com OK')
+          except Exception as e:
+              # 可能需要先验证域名所有权，打印 token
+              err_str = str(e)
+              print(f'Domain binding note: {err_str[:300]}')
+              if 'NeedVerifyDomainOwnership' in err_str or 'token' in err_str.lower():
+                  try:
+                      result = bucket.get_bucket_cname_token('pattra.yiyeguizhen.com')
+                      print(f'域名验证 Token: {result.cname_token}')
+                      print(f'请在 DNS 添加 TXT 记录：_dnsauth.pattra IN TXT "{result.cname_token}"')
+                  except Exception as e2:
+                      print(f'Token获取: {e2}')
           PYEOF
 
       - name: 部署到上海 OSS（pattra.yiyeguizhen.com 国内访问）
