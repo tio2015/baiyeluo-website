@@ -356,8 +356,7 @@ export default function HomePage() {
           margin: "0 auto",
           padding: "0 2rem",
           display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-        }}>
+        }} className="m-grid-4">
           <StatCard num="150万" unit="+" label="馆藏贝叶经页" sublabel="PAGES" />
           <StatCard num="10000" unit="片+" label="首期数字典藏" sublabel="DIGITIZED" />
           <StatCard num="11" unit="次" label="捐赠与交流记录" sublabel="EXCHANGES" />
@@ -375,7 +374,7 @@ export default function HomePage() {
         <ChinaChar char="佛" style={{ right: "5%", top: "5%", fontSize: "20rem", opacity: 0.025 }} />
 
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6rem", alignItems: "center" }}>
+          <div style={{ display: "grid", gap: "3rem", alignItems: "center" }} className="m-grid-2">
             {/* Left: Text */}
             <div>
               <div style={{
@@ -566,10 +565,9 @@ export default function HomePage() {
 
           <div style={{
             display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
             gap: "0",
             border: "1px solid rgba(196,151,58,0.25)",
-          }}>
+          }} className="m-grid-4">
             {[
               {
                 num: "01",
@@ -692,9 +690,8 @@ export default function HomePage() {
           {/* Event cards */}
           <div style={{
             display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
             gap: "1.5rem",
-          }}>
+          }} className="m-grid-3">
             <EventCard
               tag="国家级典藏"
               title="向中国国家版本总馆捐赠贝叶经及桦树皮文献"
@@ -733,7 +730,7 @@ export default function HomePage() {
         <ChinaChar char="苑" style={{ right: "2%", bottom: "5%", fontSize: "18rem", opacity: 0.025 }} />
 
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6rem", alignItems: "center" }}>
+          <div style={{ display: "grid", gap: "3rem", alignItems: "center" }} className="m-grid-2">
             {/* Left: Visual */}
             <div style={{ position: "relative" }}>
               <div style={{

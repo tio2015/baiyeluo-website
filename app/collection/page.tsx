@@ -65,7 +65,7 @@ export default function CollectionPage() {
         borderBottom: "1px solid rgba(196,151,58,0.15)",
       }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "0" }}>
+          <div style={{ display: "grid", gap: "0" }}>
             {[
               { num: "150万+", unit: "页", label: "馆藏总量", note: "古巴利文·梵文·藏文佛学珍品" },
               { num: "657", unit: "部", label: "完整经册", note: "与玄奘取经数量一致" },
@@ -112,7 +112,7 @@ export default function CollectionPage() {
             }}>馆藏语种与地域分布</h2>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
+          <div style={{ display: "grid", gap: "1.5rem" }} className="m-grid-2">
             {collectionHighlights.map((item, i) => (
               <div key={i} style={{
                 background: "rgba(255,255,255,0.7)",
@@ -185,7 +185,7 @@ export default function CollectionPage() {
         background: "linear-gradient(160deg, #0e0c09 0%, #1c1510 100%)",
       }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6rem", alignItems: "center" }}>
+          <div style={{ display: "grid", gap: "3rem", alignItems: "center" }} className="m-grid-2">
             <div>
               <div style={{
                 fontFamily: "'EB Garamond',serif",
@@ -314,7 +314,7 @@ export default function CollectionPage() {
               贝叶经的制作需经六道工序，成品防虫、防水、防变形，经年不腐，堪称古代文明的保存奇迹。
             </p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1.5rem" }}>
+          <div style={{ display: "grid", gap: "1.5rem" }} className="m-grid-3">
             {[
               { step: "01", title: "采叶", desc: "取贝多罗树（棕榈科）宽大叶片，砍下后修割整齐，选取纹理均匀、厚薄一致者备用。" },
               { step: "02", title: "煮制", desc: "与酸角或柠檬同煮，至表皮脱落，叶片呈淡绿白色，质地柔韧，去除杂质与虫卵。" },
@@ -337,7 +337,7 @@ export default function CollectionPage() {
       {/* ── 特色藏品：宋代舌血彩绘贝叶经 ── */}
       <section style={{ padding: "6rem 2rem", background: "#2a1f13" }}>
         <div style={{ maxWidth: "960px", margin: "0 auto" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5rem", alignItems: "center" }}>
+          <div style={{ display: "grid", gap: "3rem", alignItems: "center" }} className="m-grid-2">
             <div>
               <div style={{ fontFamily: "'EB Garamond',serif", fontSize: "0.75rem", color: "rgba(196,151,58,0.6)", letterSpacing: "0.3em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Featured · Song Dynasty</div>
               <h2 style={{ fontFamily: "'Noto Serif SC',serif", fontSize: "clamp(1.4rem,3vw,1.9rem)", fontWeight: 400, letterSpacing: "0.12em", color: "#f4efe3", lineHeight: 1.8, marginBottom: "2rem" }}>

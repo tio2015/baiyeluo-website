@@ -216,7 +216,7 @@ export default function AboutPage() {
         }}>坦博</div>
 
         <div style={{ maxWidth: "1200px", margin: "0 auto", position: "relative", zIndex: 1 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6rem" }}>
+          <div style={{ display: "grid", gap: "3rem" }} className="m-grid-2">
             <div>
               <div style={{
                 fontFamily: "'EB Garamond',serif",
@@ -385,7 +385,7 @@ export default function AboutPage() {
             }}>学术合作</h2>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }}>
+          <div style={{ display: "grid", gap: "2rem" }} className="m-grid-2">
             {[
               {
                 institution: "兰州大学贝叶经研究中心",

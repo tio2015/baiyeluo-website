@@ -82,39 +82,56 @@ h1,h2,h3,h4,h5 {
 ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 ::selection { background: rgba(196,151,58,0.18); }
 
-/* ── 移动端响应式（覆盖 inline grid styles）── */
+/* ── 移动端响应式 ── */
+
+/* 响应式工具类 */
+.m-grid-2 { display: grid; grid-template-columns: 1fr 1fr; }
+.m-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); }
+.m-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); }
+
 @media (max-width: 768px) {
-  /* 双列 → 单列 */
-  div[style*="grid-template-columns: 1fr 1fr"],
-  div[style*="gridTemplateColumns: 1fr 1fr"] {
-    grid-template-columns: 1fr !important;
-    gap: 2rem !important;
+  .m-grid-2 { grid-template-columns: 1fr !important; gap: 2rem !important; }
+  .m-grid-3 { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
+  .m-grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* 时间轴：手机改为单列 */
+  .m-timeline-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding-left: 2rem !important;
+    border-left: 2px solid rgba(196,151,58,0.4) !important;
+    margin-bottom: 1.5rem !important;
+    position: relative;
+  }
+  .m-timeline-dot { display: none !important; }
+  .m-timeline-year-left,
+  .m-timeline-year-right {
+    display: none !important;
+  }
+  .m-timeline-card-left,
+  .m-timeline-card-right {
+    padding: 0 !important;
+    text-align: left !important;
+    width: 100% !important;
+  }
+  .m-timeline-card-left > div,
+  .m-timeline-card-right > div {
+    text-align: left !important;
   }
 
-  /* 三列 → 单列 */
-  div[style*="grid-template-columns: repeat(3"] {
-    grid-template-columns: 1fr !important;
-    gap: 1.5rem !important;
-  }
-
-  /* 四列 → 双列（统计数字保持2列可读） */
-  div[style*="grid-template-columns: repeat(4"] {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-
-  /* 字体缩小，避免溢出 */
-  h1, h2 {
-    word-break: break-word;
-  }
-
-  /* Hero 区内边距收窄 */
+  /* section 内边距收窄 */
   section {
     padding-left: 1.25rem !important;
     padding-right: 1.25rem !important;
   }
 
-  /* 导航栏手机处理 */
-  nav > div > div:last-child {
-    display: none;
-  }
+  /* 导航栏隐藏桌面链接 */
+  .nav-desktop { display: none !important; }
+
+  /* 大字标题不溢出 */
+  h1, h2, h3 { word-break: break-word; }
+
+  /* Hero 内容区内边距 */
+  .hero-content { padding: 7rem 1.5rem 4rem !important; }
 }

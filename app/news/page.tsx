@@ -94,7 +94,7 @@ export default function NewsPage() {
             marginBottom: "2rem",
           }}>国际交流 · 东西文明对话</div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5rem", alignItems: "start" }}>
+          <div style={{ display: "grid", gap: "3rem", alignItems: "start" }} className="m-grid-2">
             <div>
               <h2 style={{
                 fontFamily: "'Noto Serif SC',serif",
@@ -130,7 +130,7 @@ export default function NewsPage() {
               </div>
 
               {/* Key facts */}
-              <div style={{ marginTop: "2.5rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+              <div style={{ marginTop: "2.5rem", display: "grid", gap: "1rem" }} className="m-grid-2">
                 {[
                   { label: "交流地点", value: "梵蒂冈" },
                   { label: "交流对象", value: "教皇方济各" },
@@ -178,7 +178,7 @@ export default function NewsPage() {
                 }}>白十源向教皇方济各敬赠贝叶经 · 梵蒂冈</div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+              <div style={{ display: "grid", gap: "0.75rem" }} className="m-grid-2">
                 {[
                   { src: "/images/vatican/pope-presenting-bw.jpg", alt: "敬赠现场（黑白）" },
                   { src: "/images/vatican/sistine.jpg", alt: "西斯廷礼拜堂" },
@@ -224,7 +224,7 @@ export default function NewsPage() {
             marginBottom: "2rem",
           }}>国家级典藏 · 国家版本总馆</div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5rem", alignItems: "start" }}>
+          <div style={{ display: "grid", gap: "3rem", alignItems: "start" }} className="m-grid-2">
             {/* Images */}
             <div>
               <div style={{ marginBottom: "1.5rem", border: "1px solid rgba(196,151,58,0.2)", overflow: "hidden" }}>
@@ -325,7 +325,7 @@ export default function NewsPage() {
             marginBottom: "2rem",
           }}>学术合作 · 进行中</div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5rem" }}>
+          <div style={{ display: "grid", gap: "3rem" }} className="m-grid-2">
             <div>
               <h2 style={{
                 fontFamily: "'Noto Serif SC',serif",
@@ -453,7 +453,7 @@ export default function NewsPage() {
             }} />
 
             {donationHistory.map((item, i) => (
-              <div key={i} style={{
+              <div key={i} className="m-timeline-row" style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 40px 1fr",
                 gap: "0",
@@ -462,10 +462,7 @@ export default function NewsPage() {
               }}>
                 {i % 2 === 0 ? (
                   <>
-                    <div style={{
-                      paddingRight: "2rem",
-                      textAlign: "right",
-                    }}>
+                    <div className="m-timeline-card-left" style={{ paddingRight: "2rem", textAlign: "right" }}>
                       <div style={{
                         background: "rgba(255,255,255,0.7)",
                         border: "1px solid rgba(196,151,58,0.2)",
@@ -486,47 +483,22 @@ export default function NewsPage() {
                         <div style={{ fontFamily: "'Noto Serif SC',serif", fontSize: "0.8rem", color: "rgba(28,28,28,0.6)", lineHeight: 1.9 }}>{item.desc}</div>
                       </div>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "center", paddingTop: "1.25rem" }}>
-                      <div style={{
-                        width: "10px", height: "10px",
-                        borderRadius: "50%",
-                        background: "#c4973a",
-                        border: "2px solid #f4efe3",
-                        boxShadow: "0 0 0 3px rgba(196,151,58,0.3)",
-                      }} />
+                    <div className="m-timeline-dot" style={{ display: "flex", justifyContent: "center", paddingTop: "1.25rem" }}>
+                      <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#c4973a", border: "2px solid #f4efe3", boxShadow: "0 0 0 3px rgba(196,151,58,0.3)" }} />
                     </div>
-                    <div style={{ paddingLeft: "2rem" }}>
-                      <div style={{
-                        fontFamily: "'EB Garamond',serif",
-                        fontSize: "2rem",
-                        color: "rgba(196,151,58,0.35)",
-                        lineHeight: 1,
-                        paddingTop: "0.6rem",
-                      }}>{item.year}</div>
+                    <div className="m-timeline-year-left" style={{ paddingLeft: "2rem" }}>
+                      <div style={{ fontFamily: "'EB Garamond',serif", fontSize: "2rem", color: "rgba(196,151,58,0.35)", lineHeight: 1, paddingTop: "0.6rem" }}>{item.year}</div>
                     </div>
                   </>
                 ) : (
                   <>
-                    <div style={{ paddingRight: "2rem", textAlign: "right" }}>
-                      <div style={{
-                        fontFamily: "'EB Garamond',serif",
-                        fontSize: "2rem",
-                        color: "rgba(196,151,58,0.35)",
-                        lineHeight: 1,
-                        paddingTop: "0.6rem",
-                        textAlign: "right",
-                      }}>{item.year}</div>
+                    <div className="m-timeline-year-right" style={{ paddingRight: "2rem", textAlign: "right" }}>
+                      <div style={{ fontFamily: "'EB Garamond',serif", fontSize: "2rem", color: "rgba(196,151,58,0.35)", lineHeight: 1, paddingTop: "0.6rem", textAlign: "right" }}>{item.year}</div>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "center", paddingTop: "1.25rem" }}>
-                      <div style={{
-                        width: "10px", height: "10px",
-                        borderRadius: "50%",
-                        background: "#c4973a",
-                        border: "2px solid #f4efe3",
-                        boxShadow: "0 0 0 3px rgba(196,151,58,0.3)",
-                      }} />
+                    <div className="m-timeline-dot" style={{ display: "flex", justifyContent: "center", paddingTop: "1.25rem" }}>
+                      <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#c4973a", border: "2px solid #f4efe3", boxShadow: "0 0 0 3px rgba(196,151,58,0.3)" }} />
                     </div>
-                    <div style={{ paddingLeft: "2rem" }}>
+                    <div className="m-timeline-card-right" style={{ paddingLeft: "2rem" }}>
                       <div style={{
                         background: "rgba(255,255,255,0.7)",
                         border: "1px solid rgba(196,151,58,0.2)",
